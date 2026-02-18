@@ -40,6 +40,8 @@ jobs:
           
     - name: Install AppImage tools
       run: |
+        sudo apt-get update
+        sudo apt-get install -y fuse libfuse2
         wget https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage
         chmod +x appimagetool-x86_64.AppImage
         
@@ -87,7 +89,10 @@ jobs:
         
     - name: Build AppImage
       run: |
-        ./appimagetool-x86_64.AppImage RommSync.AppDir RommSync-x86_64.AppImage
+        # Extract appimagetool
+        ./appimagetool-x86_64.AppImage --appimage-extract
+        # Use extracted version (doesn't need FUSE)
+        ./squashfs-root/AppRun RommSync.AppDir RommSync-x86_64.AppImage
         chmod +x RommSync-x86_64.AppImage
         
     - name: Create Release
