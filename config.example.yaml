@@ -1,0 +1,68 @@
+# RommSync Configuration
+# Copy this file to config.yaml and update with your settings
+
+# ROMM Server Settings
+romm:
+  url: "http://192.168.1.100:8080"  # Your ROMM server URL (no trailing slash)
+  username: "your_username"          # ROMM username
+  password: "your_password"          # ROMM password
+
+# Local Paths
+paths:
+  # Where your RetroDeck ROMs are stored
+  # Windows example: "C:/Users/YourName/retrodeck/roms"
+  # Linux example: "/home/deck/retrodeck/roms"
+  retrodeck_roms: "~/retrodeck/roms"
+  
+  # Local database for cached hashes (leave as default)
+  database: "./data/romm-sync.db"
+
+# Application Settings
+app:
+  # Port for web interface
+  port: 5000
+  
+  # Host (127.0.0.1 for local only, 0.0.0.0 to allow network access)
+  host: "127.0.0.1"
+  
+  # Auto-open browser on startup
+  auto_open_browser: true
+  
+  # Number of ROMs to display per page
+  page_size: 50
+
+# Performance Settings
+performance:
+  # Number of files to hash in parallel
+  hash_workers: 4
+  
+  # Cache expiry in hours (0 = never expire)
+  cache_expiry_hours: 24
+  
+  # Enable debug logging
+  debug: false
+
+# Platform Mapping (ROMM platform names to RetroDeck folder names)
+# Add or modify as needed for your setup
+platform_mapping:
+  "Nintendo - Game Boy": "gb"
+  "Nintendo - Game Boy Advance": "gba"
+  "Nintendo - Game Boy Color": "gbc"
+  "Nintendo - Nintendo Entertainment System": "nes"
+  "Nintendo - Super Nintendo Entertainment System": "snes"
+  "Nintendo - Nintendo 64": "n64"
+  "Nintendo - GameCube": "gc"
+  "Nintendo - Wii": "wii"
+  "Sony - PlayStation": "psx"
+  "Sony - PlayStation 2": "ps2"
+  "Sony - PlayStation Portable": "psp"
+  "Sega - Master System": "mastersystem"
+  "Sega - Mega Drive - Genesis": "megadrive"
+  "Sega - Game Gear": "gamegear"
+  "Sega - Dreamcast": "dreamcast"
+  "Atari - 2600": "atari2600"
+  "Atari - 7800": "atari7800"
+  "Atari - Lynx": "atarilynx"
+  "NEC - PC Engine - TurboGrafx 16": "pcengine"
+  "SNK - Neo Geo Pocket": "ngp"
+  "SNK - Neo Geo Pocket Color": "ngpc"

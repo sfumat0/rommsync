@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RommSync - ROM Manager</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 RommSync</h1>
+            <p class="subtitle">ROMM → RetroDeck Sync Tool</p>
+        </header>
+
+        <div id="loading" class="loading hidden">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <div id="error" class="error hidden"></div>
+
+        <!-- Stats Overview -->
+        <section id="stats" class="stats-section">
+            <div class="stat-card">
+                <div class="stat-value" id="local-count">-</div>
+                <div class="stat-label">Local ROMs</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="romm-count">-</div>
+                <div class="stat-label">ROMM Platforms</div>
+            </div>
+        </section>
+
+        <!-- Actions -->
+        <section class="actions">
+            <button id="scan-btn" class="btn btn-primary">
+                <span class="btn-icon">🔍</span> Scan Local ROMs
+            </button>
+            <button id="refresh-btn" class="btn btn-secondary">
+                <span class="btn-icon">🔄</span> Refresh
+            </button>
+            <button id="settings-btn" class="btn btn-secondary">
+                <span class="btn-icon">⚙</span> Settings
+            </button>
+            <span class="scan-info" id="scan-status">Not scanned</span>
+        </section>
+
+        <!-- Home Search -->
+        <section id="home-search-section">
+            <div class="search-box">
+                <input type="text" id="home-search" placeholder="Search platforms and games...">
+            </div>
+            <div id="home-search-results" class="hidden"></div>
+        </section>
+
+        <!-- Platform Selection -->
+        <section id="platform-view" class="hidden">
+            <h2>Select Platform</h2>
+            <div class="search-box">
+                <input type="text" id="platform-search" placeholder="Search platforms...">
+            </div>
+            <div id="platform-list" class="platform-list"></div>
+        </section>
+
+        <!-- Settings View -->
+        <section id="settings-view" class="hidden">
+            <div class="view-header">
+                <button id="settings-back-btn" class="btn btn-back">← Back</button>
+                <h2>Settings</h2>
+            </div>
+
+            <div class="settings-grid">
+                <div class="settings-section">
+                    <h3>ROMM Server</h3>
+                    <input type="text" id="set-romm-url" placeholder="http://192.168.1.197:8090">
+                    <input type="text" id="set-romm-user" placeholder="Username">
+                    <input type="password" id="set-romm-pass" placeholder="Password">
+                </div>
+
+                <div class="settings-section">
+                    <h3>RetroDeck Path</h3>
+                    <input type="text" id="set-retrodeck-path" placeholder="/path/to/retrodeck/roms">
+                </div>
+
+                <div class="settings-section full-width">
+                    <h3>Platform Mappings</h3>
+                    <button id="gen-mappings-btn" class="btn btn-primary">🔄 Generate from ROMM</button>
+                    <div id="mappings-container" class="mappings-grid"></div>
+                </div>
+
+                <div class="settings-section full-width">
+                    <button id="save-config-btn" class="btn btn-download">💾 Save Configuration</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ROM List -->
+        <section id="rom-view" class="hidden">
+            <div class="view-header">
+                <button id="back-btn" class="btn btn-back">← Back</button>
+                <h2 id="platform-name"></h2>
+                <span id="rom-count-badge" class="badge"></span>
+            </div>
+            
+            <div class="search-box">
+                <input type="text" id="rom-search" placeholder="Search ROMs...">
+            </div>
+
+            <div class="filter-tabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="available">Available</button>
+                <button class="filter-tab" data-filter="downloaded">Downloaded</button>
+            </div>
+
+            <div class="actions" style="margin-bottom: 1rem;">
+                <button id="multi-select-btn" class="btn btn-secondary btn-small">
+                    <span class="btn-icon">☑</span> Multi-Select
+                </button>
+                <div id="batch-actions" class="hidden" style="display: flex; gap: 0.5rem; margin-left: auto;">
+                    <span id="selected-count" style="align-self: center; color: var(--text-secondary);"></span>
+                    <button id="download-selected-btn" class="btn btn-primary btn-small">
+                        <span class="btn-icon">📥</span> Download Selected
+                    </button>
+                    <button id="download-all-missing-btn" class="btn btn-secondary btn-small">
+                        <span class="btn-icon">📥</span> Download All Missing
+                    </button>
+                    <button id="cancel-select-btn" class="btn btn-back btn-small">Cancel</button>
+                </div>
+            </div>
+
+            <div id="rom-list" class="rom-list"></div>
+        </section>
+
+        <!-- ROM Detail -->
+        <!-- ROM Detail Modal -->
+        <div id="detail-modal" class="modal hidden">
+            <div class="detail-modal-content">
+                <!-- Compact Header with Title and Actions -->
+                <div class="detail-header">
+                    <div class="detail-header-left">
+                        <h2 id="detail-title">Game Title</h2>
+                        <div id="detail-subtitle" class="detail-subtitle"></div>
+                    </div>
+                    <div class="detail-header-right">
+                        <button id="detail-download-btn" class="btn btn-download">⬇</button>
+                        <div id="detail-downloaded-badge" class="detail-downloaded-compact hidden">✅</div>
+                        <div class="detail-nav-compact">
+                            <button id="detail-prev-btn" class="btn-nav-compact">←</button>
+                            <span id="detail-position">1/100</span>
+                            <button id="detail-next-btn" class="btn-nav-compact">→</button>
+                        </div>
+                        <button id="detail-close-btn" class="btn-close-compact">✕</button>
+                    </div>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="detail-tabs">
+                    <button class="detail-tab active" data-tab="overview">Overview</button>
+                    <button class="detail-tab" data-tab="media">Media</button>
+                    <button class="detail-tab" data-tab="details">Details</button>
+                    <button class="detail-tab" data-tab="similar">Similar Games</button>
+                    <button class="detail-tab" data-tab="stats">Stats</button>
+                </div>
+
+                <!-- Tab Content Container -->
+                <div class="detail-tab-content">
+                    <!-- Overview Tab -->
+                    <div class="tab-pane active" id="tab-overview">
+                        <div class="overview-layout">
+                            <div class="overview-left">
+                                <div class="detail-cover-wrapper-compact">
+                                    <img id="detail-cover-img" src="" alt="Cover Art">
+                                </div>
+                            </div>
+                            <div class="overview-right">
+                                <div class="detail-meta-chips">
+                                    <span class="meta-chip" id="detail-rating"></span>
+                                    <span class="meta-chip" id="detail-genres"></span>
+                                    <span class="meta-chip" id="detail-year"></span>
+                                    <span class="meta-chip" id="detail-developer"></span>
+                                </div>
+                                <div class="detail-description-scroll">
+                                    <p id="detail-description-text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Media Tab -->
+                    <div class="tab-pane" id="tab-media">
+                        <div class="media-layout-full">
+                            <div class="media-viewer">
+                                <button class="media-nav-btn media-prev" id="media-prev-btn">‹</button>
+                                <img id="detail-main-screenshot" src="" alt="Screenshot">
+                                <div class="play-overlay hidden" id="play-overlay">▶</div>
+                                <div class="media-position-overlay" id="media-position">1 / 10</div>
+                                <button class="media-nav-btn media-next" id="media-next-btn">›</button>
+                            </div>
+                        </div>
+                        
+                        <!-- YouTube Player Modal -->
+                        <div id="youtube-modal" class="youtube-modal hidden">
+                            <div class="youtube-modal-content">
+                                <button id="youtube-close-btn" class="btn-close-compact">✕</button>
+                                <iframe id="youtube-iframe" 
+                                        width="100%" 
+                                        height="100%" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen>
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Details Tab -->
+                    <div class="tab-pane" id="tab-details">
+                        <div class="details-grid" id="details-grid-content"></div>
+                    </div>
+
+                    <!-- Similar Games Tab -->
+                    <div class="tab-pane" id="tab-similar">
+                        <div class="similar-grid" id="similar-games-grid"></div>
+                    </div>
+
+                    <!-- Stats Tab -->
+                    <div class="tab-pane" id="tab-stats">
+                        <div class="stats-layout" id="stats-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Download Queue Panel -->
+        <div id="download-queue-panel" class="download-queue hidden">
+            <div class="download-queue-header">
+                <h3>📥 Download Queue</h3>
+                <button id="toggle-queue-btn" class="btn-icon-only">−</button>
+            </div>
+            <div id="download-queue-content" class="download-queue-content">
+                <div id="queue-list"></div>
+            </div>
+        </div>
+
+        <!-- Custom Confirmation Modal -->
+        <div id="confirm-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="confirm-title">Confirm Download</h3>
+                <div id="confirm-message" style="margin-bottom: 1.5rem; line-height: 1.6;"></div>
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button id="confirm-cancel-btn" class="btn btn-secondary">Cancel</button>
+                    <button id="confirm-ok-btn" class="btn btn-primary">OK</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scan Progress Modal -->
+        <div id="scan-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Scanning Local ROMs</h3>
+                <div class="progress-bar">
+                    <div id="scan-progress" class="progress-fill"></div>
+                </div>
+                <p id="scan-status-text">Initializing scan...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
