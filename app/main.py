@@ -2,6 +2,7 @@
 RommSync - Main Application
 A tool to sync ROMs from ROMM server to RetroDeck
 """
+import sys
 import yaml
 import logging
 from pathlib import Path
@@ -91,7 +92,12 @@ app = FastAPI(
 )
 
 # Mount static files
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# Mount static files - handle PyInstaller bundle
+if getattr(sys, 'frozen', False):
+    static_path = Path(sys._MEIPASS) / 'static'
+else:
+    static_path = Path(__file__).parent / 'static'
+app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 
 # Pydantic models
