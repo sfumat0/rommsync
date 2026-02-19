@@ -37,20 +37,33 @@ scan_in_progress = False
 
 def load_config():
     """Load configuration from config.yaml"""
-    # Look for config.yaml in current directory (where AppImage is run from)
-    config_path = Path.cwd() / "config.yaml"
-    if not config_path.exists():
-        config_path = Path.cwd() / "config.example.yaml"
+    # When running as AppImage, always use ~/.rommsync/config.yaml
+    if getattr(sys, 'frozen', False):
+        config_dir = Path.home() / '.rommsync'
+        config_dir.mkdir(exist_ok=True)
+        config_path = config_dir / 'config.yaml'
+        
+        # If config doesn't exist, create it from example
         if not config_path.exists():
-            # Last resort: create a default one
-            config_path = Path.home() / ".rommsync" / "config.yaml"
+            logger.warning(f"No config found at {config_path}")
+            logger.info("Please create ~/.rommsync/config.yaml with your ROMM server details")
+            raise FileNotFoundError(
+                f"Config file not found at {config_path}\n"
+                "Please create ~/.rommsync/config.yaml with your ROMM server settings"
+            )
+    else:
+        # Running normally - look in current directory
+        config_path = Path.cwd() / "config.yaml"
+        if not config_path.exists():
+            config_path = Path.cwd() / "config.example.yaml"
             if not config_path.exists():
-                raise FileNotFoundError("No config.yaml found. Please create one in the same directory as the AppImage")
+                raise FileNotFoundError("No config.yaml found. Copy config.example.yaml to config.yaml")
     
+    logger.info(f"Loading config from: {config_path}")
     with open(config_path, 'r') as f:
         cfg = yaml.safe_load(f)
     
-    # Set database path based on whether we're frozen (AppImage)
+    # Set database path
     if getattr(sys, 'frozen', False):
         data_dir = Path.home() / '.rommsync'
         data_dir.mkdir(exist_ok=True)
