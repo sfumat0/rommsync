@@ -37,11 +37,15 @@ scan_in_progress = False
 
 def load_config():
     """Load configuration from config.yaml"""
-    config_path = Path("config.yaml")
+    # Look for config.yaml in current directory (where AppImage is run from)
+    config_path = Path.cwd() / "config.yaml"
     if not config_path.exists():
-        config_path = Path("config.example.yaml")
+        config_path = Path.cwd() / "config.example.yaml"
         if not config_path.exists():
-            raise FileNotFoundError("No config.yaml found. Copy config.example.yaml to config.yaml")
+            # Last resort: create a default one
+            config_path = Path.home() / ".rommsync" / "config.yaml"
+            if not config_path.exists():
+                raise FileNotFoundError("No config.yaml found. Please create one in the same directory as the AppImage")
     
     with open(config_path, 'r') as f:
         cfg = yaml.safe_load(f)
@@ -105,9 +109,17 @@ app = FastAPI(
 # Mount static files
 # Mount static files - handle PyInstaller bundle
 if getattr(sys, 'frozen', False):
+    # Running as AppImage/frozen - files are in _MEIPASS
     static_path = Path(sys._MEIPASS) / 'static'
+    logger.info(f"Running as frozen app, static path: {static_path}")
+    logger.info(f"Static path exists: {static_path.exists()}")
+    if static_path.exists():
+        logger.info(f"Static contents: {list(static_path.iterdir())}")
 else:
+    # Running normally
     static_path = Path(__file__).parent / 'static'
+    logger.info(f"Running normally, static path: {static_path}")
+
 app.mount("/static", StaticFiles(directory=str(static_path)), name="static")
 
 
