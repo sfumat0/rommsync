@@ -44,7 +44,18 @@ def load_config():
             raise FileNotFoundError("No config.yaml found. Copy config.example.yaml to config.yaml")
     
     with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
+    
+    # Set database path based on whether we're frozen (AppImage)
+    if getattr(sys, 'frozen', False):
+        data_dir = Path.home() / '.rommsync'
+        data_dir.mkdir(exist_ok=True)
+        cfg['paths']['database'] = str(data_dir / 'romm_sync.db')
+    elif 'database' not in cfg.get('paths', {}):
+        Path('data').mkdir(exist_ok=True)
+        cfg['paths']['database'] = 'data/romm_sync.db'
+    
+    return cfg
 
 
 @asynccontextmanager
