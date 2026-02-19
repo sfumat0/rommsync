@@ -1,6 +1,6 @@
 # RommSync
 
-This is 100% Vibe coded! Please do not use if you are not comfortable with this. I needed to post to GitHub to package the application.
+This is 100% Vibe coded! Please do not use if you are not comfortable with this. I needed to post to GitHub to package the application to an AppImage for installation on Steam Deck.
 
 A beautiful ROM management tool for RetroDeck + ROMM integration on Steam Deck.
 
