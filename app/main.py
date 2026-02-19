@@ -138,7 +138,7 @@ class DownloadRequest(BaseModel):
 @app.get("/")
 async def root():
     """Serve the main UI"""
-    return FileResponse("app/static/index.html")
+    return FileResponse(str(static_path / "index.html"))
 
 
 @app.get("/api/config")
