@@ -180,9 +180,17 @@ async def save_config(request: Request):
         config['paths']['retrodeck_roms'] = data.get('retrodeck_path', config['paths']['retrodeck_roms'])
         config['platform_mapping'] = data.get('platform_mapping', config.get('platform_mapping', {}))
         
+        # Determine config file location
+        if getattr(sys, 'frozen', False):
+            config_path = Path.home() / '.rommsync' / 'config.yaml'
+        else:
+            config_path = Path('config.yaml')
+        
         # Save to file
-        with open('config.yaml', 'w') as f:
+        with open(config_path, 'w') as f:
             yaml.dump(config, f, default_flow_style=False)
+        
+        logger.info(f"Configuration saved to {config_path}")
         
         # Reinitialize ROMM client with new credentials
         global romm_client
